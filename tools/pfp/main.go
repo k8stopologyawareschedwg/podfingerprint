@@ -40,7 +40,7 @@ func main() {
 	flag.Parse()
 
 	var fp Fingerprinter
-	var st podfingerprint.Status
+	st := podfingerprint.MakeStatus("STDIN")
 	if *withTrace {
 		fp = podfingerprint.NewTracingFingerprint(0, &st)
 	} else {
@@ -59,7 +59,11 @@ func main() {
 		}
 		fp.Add(fields[0], fields[1])
 	}
-	fmt.Println(fp.Sign())
+	pfp := fp.Sign()
+	if *withTrace {
+		podfingerprint.MarkCompleted(st)
+	}
+	fmt.Println(pfp)
 
 	if *withTrace {
 		json.NewEncoder(os.Stderr).Encode(st)
