@@ -90,3 +90,144 @@ func TestMarkCompleted(t *testing.T) {
 		})
 	}
 }
+
+func TestMarkCompletedWithoutSet(t *testing.T) {
+	type testCase struct {
+		name          string
+		sink          chan Status
+		status        Status
+		expectedError error
+	}
+
+	testCases := []testCase{
+		{
+			name: "no completion sink",
+			status: Status{
+				NodeName: "test-node-0",
+				Pods: []NamespacedName{
+					{
+						Namespace: "ns-1",
+						Name:      "pod-1",
+					},
+					{
+						Namespace: "ns-2",
+						Name:      "pod-2",
+					},
+					{
+						Namespace: "ns-2",
+						Name:      "pod-3",
+					},
+				},
+				FingerprintExpected: "pfp0v001807d932586d44a8a",
+				FingerprintComputed: "pfp0v001807d932586d44a8a",
+			},
+			sink: nil, // explicit
+		},
+		{
+			name: "with completion sink",
+			status: Status{
+				NodeName: "test-node-0",
+				Pods: []NamespacedName{
+					{
+						Namespace: "ns-1",
+						Name:      "pod-1",
+					},
+					{
+						Namespace: "ns-2",
+						Name:      "pod-2",
+					},
+					{
+						Namespace: "ns-2",
+						Name:      "pod-3",
+					},
+				},
+				FingerprintExpected: "pfp0v001807d932586d44a8a",
+				FingerprintComputed: "pfp0v001807d932586d44a8a",
+			},
+			sink: make(chan Status, 5), // anything > 1 is fine
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := MarkCompleted(tc.status)
+			if err != tc.expectedError {
+				t.Errorf("got error=%v expected=%v", err, tc.expectedError)
+			}
+			if tc.sink != nil && len(tc.sink) != 0 {
+				t.Errorf("unexpected data in sink: %d", len(tc.sink))
+			}
+		})
+	}
+}
+
+func TestMarkCompletedWithExplicitClean(t *testing.T) {
+	type testCase struct {
+		name          string
+		sink          chan Status
+		status        Status
+		expectedError error
+	}
+
+	testCases := []testCase{
+		{
+			name: "no completion sink",
+			status: Status{
+				NodeName: "test-node-0",
+				Pods: []NamespacedName{
+					{
+						Namespace: "ns-1",
+						Name:      "pod-1",
+					},
+					{
+						Namespace: "ns-2",
+						Name:      "pod-2",
+					},
+					{
+						Namespace: "ns-2",
+						Name:      "pod-3",
+					},
+				},
+				FingerprintExpected: "pfp0v001807d932586d44a8a",
+				FingerprintComputed: "pfp0v001807d932586d44a8a",
+			},
+			sink: nil, // explicit
+		},
+		{
+			name: "with completion sink",
+			status: Status{
+				NodeName: "test-node-0",
+				Pods: []NamespacedName{
+					{
+						Namespace: "ns-1",
+						Name:      "pod-1",
+					},
+					{
+						Namespace: "ns-2",
+						Name:      "pod-2",
+					},
+					{
+						Namespace: "ns-2",
+						Name:      "pod-3",
+					},
+				},
+				FingerprintExpected: "pfp0v001807d932586d44a8a",
+				FingerprintComputed: "pfp0v001807d932586d44a8a",
+			},
+			sink: make(chan Status, 5), // anything > 1 is fine
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			CleanCompletionSink()
+			err := MarkCompleted(tc.status)
+			if err != tc.expectedError {
+				t.Errorf("got error=%v expected=%v", err, tc.expectedError)
+			}
+			if tc.sink != nil && len(tc.sink) != 0 {
+				t.Errorf("unexpected data in sink: %d", len(tc.sink))
+			}
+		})
+	}
+}
