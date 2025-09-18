@@ -219,3 +219,154 @@ func TestStatusClone(t *testing.T) {
 		t.Errorf("original modified changing the clone!\norig=%s\norig2=%s", string(origData), string(origData2))
 	}
 }
+
+func TestStatusEqual(t *testing.T) {
+	X := Status{
+		FingerprintExpected: "PFPExpectedOrig",
+		FingerprintComputed: "PFPComputedOrig",
+		Pods: []NamespacedName{
+			{
+				Namespace: "NSOrig1",
+				Name:      "Name1",
+			},
+			{
+				Namespace: "NSOrig2",
+				Name:      "Name2",
+			},
+		},
+		NodeName: "Node",
+	}
+	testCases := []struct {
+		Desc     string
+		Y        Status
+		Expected bool
+	}{
+		{
+			Desc: "clone",
+			Y: Status{
+				FingerprintExpected: "PFPExpectedOrig",
+				FingerprintComputed: "PFPComputedOrig",
+				Pods: []NamespacedName{
+					{
+						Namespace: "NSOrig1",
+						Name:      "Name1",
+					},
+					{
+						Namespace: "NSOrig2",
+						Name:      "Name2",
+					},
+				},
+				NodeName: "Node",
+			},
+			Expected: true,
+		},
+		{
+			Desc: "diff: nodeName",
+			Y: Status{
+				FingerprintExpected: "PFPExpectedOrig",
+				FingerprintComputed: "PFPComputedOrig",
+				Pods: []NamespacedName{
+					{
+						Namespace: "NSOrig1",
+						Name:      "Name1",
+					},
+					{
+						Namespace: "NSOrig2",
+						Name:      "Name2",
+					},
+				},
+				NodeName: "NodeFooBar",
+			},
+			Expected: false,
+		},
+		{
+			Desc: "diff: pfp Expected",
+			Y: Status{
+				FingerprintExpected: "PFPExpectedDIFF",
+				FingerprintComputed: "PFPComputedOrig",
+				Pods: []NamespacedName{
+					{
+						Namespace: "NSOrig1",
+						Name:      "Name1",
+					},
+					{
+						Namespace: "NSOrig2",
+						Name:      "Name2",
+					},
+				},
+				NodeName: "Node",
+			},
+			Expected: false,
+		},
+		{
+			Desc: "diff: pfp Computed",
+			Y: Status{
+				FingerprintExpected: "PFPExpectedOrig",
+				FingerprintComputed: "PFPComputedDiff",
+				Pods: []NamespacedName{
+					{
+						Namespace: "NSOrig1",
+						Name:      "Name1",
+					},
+					{
+						Namespace: "NSOrig2",
+						Name:      "Name2",
+					},
+				},
+				NodeName: "Node",
+			},
+			Expected: false,
+		},
+		{
+			Desc: "diff: pod count",
+			Y: Status{
+				FingerprintExpected: "PFPExpectedOrig",
+				FingerprintComputed: "PFPComputedDiff",
+				Pods: []NamespacedName{
+					{
+						Namespace: "NSOrig2",
+						Name:      "Name2",
+					},
+				},
+				NodeName: "Node",
+			},
+			Expected: false,
+		},
+		{
+			Desc: "diff: pod values",
+			Y: Status{
+				FingerprintExpected: "PFPExpectedOrig",
+				FingerprintComputed: "PFPComputedDiff",
+				Pods: []NamespacedName{
+					{
+						Namespace: "NSOrig5",
+						Name:      "Name5",
+					},
+					{
+						Namespace: "NSOrigX",
+						Name:      "NameX",
+					},
+				},
+				NodeName: "Node",
+			},
+			Expected: false,
+		},
+		{
+			Desc: "diff: pod missing",
+			Y: Status{
+				FingerprintExpected: "PFPExpectedOrig",
+				FingerprintComputed: "PFPComputedDiff",
+				NodeName:            "Node",
+			},
+			Expected: false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.Desc, func(t *testing.T) {
+			got := X.Equal(tc.Y)
+			if got != tc.Expected {
+				t.Fatalf("got=%v expected=%v", got, tc.Expected)
+			}
+		})
+	}
+}
