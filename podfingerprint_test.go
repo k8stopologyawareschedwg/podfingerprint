@@ -17,11 +17,9 @@
 package podfingerprint
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"math/rand"
-	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -30,6 +28,7 @@ import (
 var stressPods []NamespacedName
 
 var pods []NamespacedName
+var podsFingerprint string
 var podsErr error
 
 const (
@@ -53,12 +52,14 @@ func RandStringBytes(n int) string {
 }
 
 func init() {
-	var data []byte
-	data, podsErr = os.ReadFile(filepath.Join("testdata", "pods.json"))
+	pods, podsErr = parsePodsTxt(filepath.Join("testdata", "compat-large-100pods-10ns.txt"))
 	if podsErr != nil {
 		return
 	}
-	podsErr = json.Unmarshal(data, &pods)
+	podsFingerprint, podsErr = readGoldenSign(filepath.Join("testdata", "compat-large-100pods-10ns.sign"))
+	if podsErr != nil {
+		return
+	}
 
 	stressPodsCount := clusterMaxNodes * clusterMaxPodsPerNode
 	for idx := 0; idx < stressPodsCount; idx++ {
@@ -245,7 +246,6 @@ func TestCheck(t *testing.T) {
 			expectedError: ErrMalformed,
 		},
 		{
-			// artificial test case
 			description:   "malformed version",
 			pods:          pods,
 			fingerprint:   "pfp0vX",
@@ -266,7 +266,7 @@ func TestCheck(t *testing.T) {
 		{
 			description: "correct fingerprint",
 			pods:        pods,
-			fingerprint: "pfp0v001e477a4e3b2fc0ec6", // precomputed and validated manually
+			fingerprint: podsFingerprint, // precomputed by tools/pfp, stored in testdata/*.sign
 		},
 	}
 
