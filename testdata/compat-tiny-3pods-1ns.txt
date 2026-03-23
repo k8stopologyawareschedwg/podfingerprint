@@ -1,0 +1,3 @@
+production                      jaeger-dpgjk      1/1 Running 1 42d
+production                      nginx-rt684       1/1 Running 1 42d
+production                      envoy-g9m22       1/1 Running 1 42d

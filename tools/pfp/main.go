@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"text/tabwriter"
 
 	"github.com/k8stopologyawareschedwg/podfingerprint"
 )
@@ -36,8 +37,21 @@ type Fingerprinter interface {
 }
 
 func main() {
+	randSeed := flag.Int64("S", 1, "random seed for syntetic generation")
+	genPods := flag.Int("P", 0, "generate N syntetic pods")
+	genNS := flag.Int("N", 1, "generate pods in M different namespaces")
 	withTrace := flag.Bool("T", false, "enable tracing")
 	flag.Parse()
+
+	if *genPods > 0 {
+		w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', 0)
+		pods := generatePods(*randSeed, *genNS, *genPods)
+		for _, pod := range pods {
+			fmt.Fprintf(w, "%-31s\t%-17s\t1/1\tRunning\t1\t42d\n", pod.Namespace, pod.Name)
+		}
+		w.Flush()
+		return
+	}
 
 	var fp Fingerprinter
 	st := podfingerprint.MakeStatus("STDIN")
