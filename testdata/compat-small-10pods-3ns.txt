@@ -1,0 +1,10 @@
+analytics                       controller-69dkj  1/1 Running 1 42d
+kube-public                     subscriber-tq6v7  1/1 Running 1 42d
+kube-public                     transformer-hfbng 1/1 Running 1 42d
+kube-public                     validator-c6pn5   1/1 Running 1 42d
+kube-system                     proxy-wszrd       1/1 Running 1 42d
+middleware                      processor-jkrl4   1/1 Running 1 42d
+network                         gateway-vsll5     1/1 Running 1 42d
+network                         importer-kzdfr    1/1 Running 1 42d
+network                         importer-q5vt9    1/1 Running 1 42d
+staging                         prometheus-bwgbn  1/1 Running 1 42d

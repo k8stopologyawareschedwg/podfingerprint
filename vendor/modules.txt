@@ -1,3 +1,3 @@
-# github.com/OneOfOne/xxhash v1.2.8
+# github.com/cespare/xxhash/v2 v2.3.0
 ## explicit; go 1.11
-github.com/OneOfOne/xxhash
+github.com/cespare/xxhash/v2
